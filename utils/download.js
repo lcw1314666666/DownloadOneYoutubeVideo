@@ -61,7 +61,9 @@ async function download1080VideoFile(newVideo) {
     let audioFormats = await ytdl.filterFormats(info.formats, 'audioonly');
 
     return new Promise((resolve, reject) => {
-        Promise.all([downloadFile(VideoFormat.url, `newVideo${new Date().Format("yyyy-MM-dd")}.mp4`), downloadFile(audioFormats[audioFormats.length - 1].url,`newAudio${new Date().Format("yyyy-MM-dd")}.mp3`)]).then(async () => {
+        const moddleAudio = Math.floor(audioFormats.length / 2)
+        console.log(moddleAudio, 'moddleAudio')
+        Promise.all([downloadFile(VideoFormat.url, `newVideo${new Date().Format("yyyy-MM-dd")}.mp4`), downloadFile(audioFormats[moddleAudio].url,`newAudio${new Date().Format("yyyy-MM-dd")}.mp3`)]).then(async () => {
             console.log('文件下载完毕')
             // 文件下载完毕
             process.exec('node --experimental-wasm-threads utils/syntheticVideo.js',function (error, stdout, stderr) {
