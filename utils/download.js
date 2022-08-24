@@ -4,7 +4,10 @@ const proxyAgent = require('proxy-agent');
 const ytdl = require('ytdl-core');
 const path = require('path')
 const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
-const COOKIE = 'HSID=A90-J1dZizy2UKJan; SSID=AWkQdbNuRBPLKyPyg; APISID=dOTWnLiPV8cah59r/AhBmQCOyR7LRg7vPr; SAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; __Secure-1PAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; __Secure-3PAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; SEARCH_SAMESITE=CgQIh5YB; SID=NQiugaAflq6v7J-NdSn5OzVC_wHN91wSDAWrzdOjMc1vzExSrwmLJ7Y54FAj9cMLyeiN_w.; __Secure-1PSID=NQiugaAflq6v7J-NdSn5OzVC_wHN91wSDAWrzdOjMc1vzExSN-euanNOJ-9zTVmWWRYBgA.; __Secure-3PSID=NQiugaAflq6v7J-NdSn5OzVC_wHN91wSDAWrzdOjMc1vzExSQhtdUkb1E1CuVB7tKDDhNA.; AEC=AakniGMxoAEi0Ve5I2QES1dJ_rsjcyX2BO-3NnP2xmZiusrQv6HpGqBgfmM; eskucgkwiu72frkqawfcountry=CN; 1P_JAR=2022-08-15-03; NID=511=XFb4bC4eqQV5uMXvZ6cHXfcbTiQSDxy5FTis3E8xO4btfQKfqVb_hXx_PI-F7hocx0GGan_w5fCAGyC5VxY4c9Sy9JRGMqT1rNik8N7xAHuTLkXvYi1ezMjfA8dxH75DGMf9MavZd1fjUVmOrWgAGUvbhN_TOuVNygYW7li7JDDSZG5McrdJrEq1VYktOvWbc8p72JG5J7k8Zy75cNM62PfQFE9JZW5OyOsdOx363ZyngjmN4asKLH-2P2h--Q; DV=k_Zvn_luJPFYACJ-bZgLX55dfjT4KZhSuArK4jRoAAMAAKDFqKjTvhxqFwEAAAgH7s-UDNE6ZAAAALHLR6h06tYjHAAAAA; SIDCC=AEf-XMQSdTdkK05CU0x3a4Kff7O1q1bBtDVnnerDebQZQ0BAPs1YSflquUtZM0xwlawY0H-2i8o; __Secure-1PSIDCC=AEf-XMRtuDhEc1B4U1fJhpBou53t6V9fe1cooZypUH2UaAJxdhc6nxY1O3W2NV5Gn1URWId60jQ; __Secure-3PSIDCC=AEf-XMRR0AU9vt_G-cilKqcqUJS4XVV3Hj-70YItW6a8j6km_ZFPJ0MALWacjg9n0AZ19bJsKw'
+const { getVideoId } = require('./utils.js')
+// const COOKIE = 'HSID=A90-J1dZizy2UKJan; SSID=AWkQdbNuRBPLKyPyg; APISID=dOTWnLiPV8cah59r/AhBmQCOyR7LRg7vPr; SAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; __Secure-1PAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; __Secure-3PAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; SEARCH_SAMESITE=CgQIh5YB; SID=NQiugaAflq6v7J-NdSn5OzVC_wHN91wSDAWrzdOjMc1vzExSrwmLJ7Y54FAj9cMLyeiN_w.; __Secure-1PSID=NQiugaAflq6v7J-NdSn5OzVC_wHN91wSDAWrzdOjMc1vzExSN-euanNOJ-9zTVmWWRYBgA.; __Secure-3PSID=NQiugaAflq6v7J-NdSn5OzVC_wHN91wSDAWrzdOjMc1vzExSQhtdUkb1E1CuVB7tKDDhNA.; AEC=AakniGMxoAEi0Ve5I2QES1dJ_rsjcyX2BO-3NnP2xmZiusrQv6HpGqBgfmM; eskucgkwiu72frkqawfcountry=CN; 1P_JAR=2022-08-15-03; NID=511=XFb4bC4eqQV5uMXvZ6cHXfcbTiQSDxy5FTis3E8xO4btfQKfqVb_hXx_PI-F7hocx0GGan_w5fCAGyC5VxY4c9Sy9JRGMqT1rNik8N7xAHuTLkXvYi1ezMjfA8dxH75DGMf9MavZd1fjUVmOrWgAGUvbhN_TOuVNygYW7li7JDDSZG5McrdJrEq1VYktOvWbc8p72JG5J7k8Zy75cNM62PfQFE9JZW5OyOsdOx363ZyngjmN4asKLH-2P2h--Q; DV=k_Zvn_luJPFYACJ-bZgLX55dfjT4KZhSuArK4jRoAAMAAKDFqKjTvhxqFwEAAAgH7s-UDNE6ZAAAALHLR6h06tYjHAAAAA; SIDCC=AEf-XMQSdTdkK05CU0x3a4Kff7O1q1bBtDVnnerDebQZQ0BAPs1YSflquUtZM0xwlawY0H-2i8o; __Secure-1PSIDCC=AEf-XMRtuDhEc1B4U1fJhpBou53t6V9fe1cooZypUH2UaAJxdhc6nxY1O3W2NV5Gn1URWId60jQ; __Secure-3PSIDCC=AEf-XMRR0AU9vt_G-cilKqcqUJS4XVV3Hj-70YItW6a8j6km_ZFPJ0MALWacjg9n0AZ19bJsKw'
+const COOKIE = 'VISITOR_INFO1_LIVE=VvkYhm7nQ2U; PREF=tz=Asia.Shanghai; HSID=AR4e8nKnhkJZ78LEK; SSID=AOyIDvudQIQd3iqvl; APISID=dOTWnLiPV8cah59r/AhBmQCOyR7LRg7vPr; SAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; __Secure-1PAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; __Secure-3PAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; LOGIN_INFO=AFmmF2swRQIgWJ9H4fXH3kX0ofgxVAqjyPEHfuiMVVsHsu3LSIYjMiUCIQCxzvbbJkbO6HnRDBtIlbPYsummJXZHisFDbspq62ZnUg:QUQ3MjNmdzFpYXptbmpUQm1oUzJhRkg2VkwzcGltX29TYy16bTR3UTRNZnpXU0R3SzhlZFJ3c0tLVm1zUHlVM2cyeXZkUGpweXYxbUliWl8tU1E4TkNhNENPeE0zSUNMdXRhMmR3R19zZGNkRjlmMWRrTldqWkNTM0ppN1RLdTdhSHRwbi15bnBzc2JGT0lCY2U3eWVqQ2kzNklxS3ViSHNR; SID=NgiugXQvQ0xyexIjDCHIVlyxw1Ypaub9Lr2vq5CBfyobENPekYRepmIwf2_7NkQqM2ESyA.; __Secure-1PSID=NgiugXQvQ0xyexIjDCHIVlyxw1Ypaub9Lr2vq5CBfyobENPeTcYWOrudy6rSjNz6nlldYg.; __Secure-3PSID=NgiugXQvQ0xyexIjDCHIVlyxw1Ypaub9Lr2vq5CBfyobENPeKYuTKu7Y3q2-Gtj8PTBf_w.; YSC=jbdx2J1IuDU; SIDCC=AEf-XMSs1BcwhIf97HlLJZGGxIkfSQ6HshEcVkDygq0ZkvhyvLZG_3E5es1UQOsQI8OGiqmJgA4; __Secure-1PSIDCC=AEf-XMRzPUndBHh1zVcFI2LcUbrPb2vBMqyqbrPV_UnuOjQhedLQRbkF5qanVm77G-InW-qfAmml; __Secure-3PSIDCC=AEf-XMQWqnzGpmFvr6A3jg0zDgcu0UOqMWyvk32ECI6MG4Z3ucNSQcFjgNifbpEki9kC7yx25k8; SIDCC=AEf-XMRiBMURBqMG9dQZ82ZNAalTEPdxQjmysfCUhSZwy7wfkIzGkHcp6ul8tLk68iKQa1YcdFk; expires=Tue, 22-Aug-2023 00:48:43 GMT; path=/; domain=.youtube.com; priority=high; __Secure-1PSIDCC=AEf-XMQey-Dh9Mct66d_bSHGWzuCtBVCpDqDF1saRB97XtsTsEN3vnxLUVT1AXqa5a9ldjDina79; expires=Tue, 22-Aug-2023 00:48:43 GMT; path=/; domain=.youtube.com; Secure; HttpOnly; priority=high; __Secure-3PSIDCC=AEf-XMQFpikinYeMolP5SfgE6CWRd-hXnJTQzxU6GP8KwDYDfnIHBFe1Ix5fkM5t7uKs8xf5l7c; expires=Tue, 22-Aug-2023 00:48:43 GMT; path=/; domain=.youtube.com; Secure; HttpOnly; priority=high; SameSite=none'
+// const COOKIE = 'VISITOR_INFO1_LIVE=VvkYhm7nQ2U; PREF=tz=Asia.Shanghai; HSID=AR4e8nKnhkJZ78LEK; SSID=AOyIDvudQIQd3iqvl; APISID=dOTWnLiPV8cah59r/AhBmQCOyR7LRg7vPr; SAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; __Secure-1PAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; __Secure-3PAPISID=I_VDFJXp0pP3QHxA/A3Rbk9WrJTMwazjlt; LOGIN_INFO=AFmmF2swRQIgWJ9H4fXH3kX0ofgxVAqjyPEHfuiMVVsHsu3LSIYjMiUCIQCxzvbbJkbO6HnRDBtIlbPYsummJXZHisFDbspq62ZnUg:QUQ3MjNmdzFpYXptbmpUQm1oUzJhRkg2VkwzcGltX29TYy16bTR3UTRNZnpXU0R3SzhlZFJ3c0tLVm1zUHlVM2cyeXZkUGpweXYxbUliWl8tU1E4TkNhNENPeE0zSUNMdXRhMmR3R19zZGNkRjlmMWRrTldqWkNTM0ppN1RLdTdhSHRwbi15bnBzc2JGT0lCY2U3eWVqQ2kzNklxS3ViSHNR; SID=NgiugXQvQ0xyexIjDCHIVlyxw1Ypaub9Lr2vq5CBfyobENPekYRepmIwf2_7NkQqM2ESyA.; __Secure-1PSID=NgiugXQvQ0xyexIjDCHIVlyxw1Ypaub9Lr2vq5CBfyobENPeTcYWOrudy6rSjNz6nlldYg.; __Secure-3PSID=NgiugXQvQ0xyexIjDCHIVlyxw1Ypaub9Lr2vq5CBfyobENPeKYuTKu7Y3q2-Gtj8PTBf_w.; YSC=jbdx2J1IuDU; SIDCC=AEf-XMSs1BcwhIf97HlLJZGGxIkfSQ6HshEcVkDygq0ZkvhyvLZG_3E5es1UQOsQI8OGiqmJgA4; __Secure-1PSIDCC=AEf-XMRzPUndBHh1zVcFI2LcUbrPb2vBMqyqbrPV_UnuOjQhedLQRbkF5qanVm77G-InW-qfAmml; __Secure-3PSIDCC=AEf-XMQWqnzGpmFvr6A3jg0zDgcu0UOqMWyvk32ECI6MG4Z3ucNSQcFjgNifbpEki9kC7yx25k8'
 const process = require('child_process');
 
 // const dirPath = path.join(__dirname, "files");
@@ -44,7 +47,7 @@ function downloadFile(uri,filename){
 }
 
 async function download1080VideoFile(newVideo) {
-    const videoId = newVideo.videoUrl.split('=')[1]
+    let videoId = getVideoId(newVideo.videoUrl)
     const info = await ytdl.getInfo(videoId, { // 通过Id获取视频信息
         requestOptions: {
             agent
@@ -80,17 +83,24 @@ async function download1080VideoFile(newVideo) {
 }
 
 async function download360VideoFile(newVideo) {
-    const videoId = newVideo.videoUrl.split('=')[1]
+    let videoId = getVideoId(newVideo.videoUrl)
+
     const info = await ytdl.getInfo(videoId, { // 通过Id获取视频信息
         requestOptions: {
-            agent
+            agent,
+            headers: {
+                cookie: COOKIE
+            },
         }
     });
 
     const VideoFormat = await ytdl.chooseFormat(info.formats, {
         // quality: 'highestvideo', // 获取最高质量视频地址
         requestOptions: {
-            agent
+            agent,
+            headers: {
+                cookie: COOKIE
+            },
         }
     })
 

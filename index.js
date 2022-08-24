@@ -2,10 +2,11 @@ const { download1080VideoFile, download360VideoFile, uploadVideoCover } = requir
 
 const videoObj = {
     videoName: '老高',
-    videoUrl: 'https://www.youtube.com/watch?v=BFMqm7zkld8',
+    videoUrl: 'https://www.youtube.com/watch?v=_Ms_A0vdrBE',
     videoCover: ''
 }
 
-;(() => {
-    download1080VideoFile(videoObj)
+;(async () => {
+    await download360VideoFile(videoObj)
+    // await download1080VideoFile(videoObj)
 })();
